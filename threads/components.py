@@ -189,6 +189,7 @@ class CreateThread(Component):
         x-model="description"
         class="w-100 mt3"
         placeholder="Description"
+        rows="12"
       ></textarea>
 
       <div class="tr">
