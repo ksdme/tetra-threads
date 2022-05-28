@@ -11,4 +11,8 @@ class ThreadDetailView(DetailView):
   template_name: str = 'detail.html'
 
   def get_object(self, *args):
-    return Thread.objects.first()
+    return Thread.objects.get(pk=self.kwargs.get('id'))
+
+
+class CreateThreadView(TemplateView):
+  template_name: str = 'create.html'

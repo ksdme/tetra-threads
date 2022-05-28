@@ -57,7 +57,7 @@ class Thread(Component):
     self.thread = thread
 
   template: django_html = """
-  <h3 class="">
+  <h3>
     {{thread.name}}
   </h3>
 
@@ -66,6 +66,8 @@ class Thread(Component):
       {{thread.description}}
     </p>
   {% endif %}
+
+  {% @ comment_item thread=thread / %}
 
   <hr />
 
@@ -78,22 +80,28 @@ class Thread(Component):
 class CommentItem(Component):
   text = public(None)
 
-  def load(self, comment):
+  def load(self, comment=None, thread=None):
+    self.thread = thread
     self.comment = comment
 
   @public
   def handle_create(self):
     if self.text:
-      CommentModel.objects.create(text=self.text, comment_parent=self.comment)
+      CommentModel.objects.create(
+        text=self.text,
+        post_parent=self.thread,
+        comment_parent=self.comment)
 
     # TODO: This seems to re-render the whole comment subtree. That isn't strictly
     # necessary, use some client callback to patch the interface maybe?
 
   template: django_html = """
   <div>
-    <p>
-      {{comment.text}}
-    </p>
+    {% if comment %}
+      <p>
+        {{comment.text}}
+      </p>
+    {% endif %}
 
     <div>
       <a x-show="!reply" @click="reply = true" class="black-40">
@@ -124,11 +132,13 @@ class CommentItem(Component):
       </div>
     </form>
 
-    <div class="flex flex-column pl4 bl bw1 b--black-10">
-      {% for nested_comment in comment.nested_comments.all %}
-        {% @ comment_item comment=nested_comment / %}
-      {% endfor %}
-    </div>
+    {% if comment %}
+      <div class="flex flex-column pl4 bl bw1 b--black-10">
+        {% for nested_comment in comment.nested_comments.all %}
+          {% @ comment_item comment=nested_comment / %}
+        {% endfor %}
+      </div>
+    {% endif %}
   </div>
   """
 
@@ -146,5 +156,58 @@ class CommentItem(Component):
       this.reply = false
       this.text = null
     }
+  }
+  """
+
+@default.register
+class CreateThread(Component):
+  name = public(None)
+  description = public(None)
+
+  @public
+  def handle_submit(self):
+    if self.name:
+      ThreadModel.objects.create(name=self.name, description=self.description or None)
+
+    # TODO: Gotta redirect after creating the instance. Is there a client callback for
+    # that?
+
+  template: django_html = """
+  <div>
+    <h3>
+      Create a Thread
+    </h3>
+
+    <form @submit.prevent="onSubmit()">
+      <input
+          x-model="name"
+          placeholder="Name"
+          class="w-100 border-box"
+      />
+
+      <textarea
+        x-model="description"
+        class="w-100 mt3"
+        placeholder="Description"
+      ></textarea>
+
+      <div class="tr">
+        <button>
+          Cancel
+        </button>
+
+        <button type="submit">
+          Submit
+        </button>
+      </div>
+    </form>
+  </div>
+  """
+
+  script: javascript = """
+  export default {
+    onSubmit() {
+      this.handle_submit()
+    },
   }
   """
