@@ -6,11 +6,19 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/tachyons@4.12.0/css/tachyons.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Karla&display=swap" rel="stylesheet">
   <title>Threads</title>
   {% tetra_styles %}
   {% tetra_scripts include_alpine=True %}
 </head>
 <body>
+  <style>
+    html, body {
+      font-family: 'Karla', sans-serif;
+    }
+  </style>
   <main class="mw8 pv4" style="margin: auto;">
     {% block content %}{% endblock %}
   </main>
